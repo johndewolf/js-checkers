@@ -557,7 +557,7 @@ default view by adding `apple-mobile-web-app-status-bar-style`.
 
   ```html
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-status-bar-style" content="tile--black">
 ```
 
 * You can use `apple-mobile-web-app-title` to add a specific sites name for the

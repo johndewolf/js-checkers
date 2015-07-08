@@ -129,7 +129,7 @@ process, as well as make the printed pages easier to read.
 
 At printing time, these styles will:
 
-* strip all background colors, change the font color to black, and remove the
+* strip all background colors, change the font color to tile--black, and remove the
   `text-shadow` — done in order to [help save printer ink and speed up the
   printing process](http://www.sanbeiji.com/archives/953)
 * underline and expand links to include the URL — done in order to allow users

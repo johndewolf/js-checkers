@@ -213,7 +213,7 @@ textarea {
     *:before,
     *:after {
         background: transparent !important;
-        color: #000 !important; /* Black prints faster:
+        color: #000 !important; /* tile--black prints faster:
                                    http://www.sanbeiji.com/archives/953 */
         box-shadow: none !important;
         text-shadow: none !important;
@@ -297,10 +297,10 @@ textarea {
   display: inline-block;
 }
 
-.tile.white {
+.tile--white {
   background-color: white;
 }
 
-.tile.black {
+.tile--black {
   background-color: black;
 }
