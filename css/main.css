@@ -304,3 +304,19 @@ textarea {
 .tile--black {
   background-color: black;
 }
+
+.checker {
+  height: 75%;
+  width: 75%;
+  border-radius: 50%;
+  display: block;
+  margin: 12.5% auto;
+}
+
+.checker--red {
+  background-color: red;
+}
+
+.checker--blue {
+  background-color: blue;
+}
