@@ -75,10 +75,9 @@ document.addEventListener("dragover", function( event ) {
 //If tile is playable highlight color to green
 document.addEventListener("dragenter", function( event ) {
     // highlight potential drop target when the draggable element enters it
-    if ( checkDropLocation(event) != false ) {
-        event.stopPropagation();
+    if ( checkDropLocation(event) != false && event.target.classList[0] == 'tile' ) {
         event.target.style.background = "green";
-    } else {
+    } else if ( event.target.classList[0] == 'tile' && checkDropLocation(event) == false ) {
       event.target.style.background = 'pink';
     }
 }, false);
@@ -100,18 +99,12 @@ document.addEventListener("drop", function( event ) {
         event.target.style.background = "";
         dragged.parentNode.removeChild( dragged );
         event.target.appendChild( dragged );
-        if (dragged.classList[1] == 'checker--red') {
-          dragged.style.background = "red";
-        }
-        else {
-          dragged.style.background = 'blue';
-        }
     }
 
 }, false);
 
 function checkDropLocation (dropLocation) {
-  if ( dropLocation.target.classList[0] == "tile" && dropLocation.target.childElementCount > 0 ) {
+  if ( ( dropLocation.target.classList[0] == "tile" && dropLocation.target.childElementCount > 0 )|| ( dropLocation.target.classList[0] == 'checker' ) ) {
     return false
   }
 }
