@@ -13,6 +13,12 @@ function CheckerPiece(id, color, location) {
   this.id = id;
   this.color = color;
   this.location = location;
+  this.addChecker = function(tile, color) {
+    var checker = document.createElement('div');
+    checker.className = "checker checker--" + color;
+    checker.draggable = "true";
+    tile.appendChild(checker);
+  }
 }
 
 var redTeam = [];
@@ -26,8 +32,9 @@ for (var x = 0; x < rows.length; x++) {
     var blueCounter = 0;
     if (x < 3) {
       if (x % 2 === 0 && y % 2 === 0) {
-        addChecker(tiles[y], "red");
+        // var checker = addChecker(tiles[y], "red");
         var redChecker = new CheckerPiece(redCounter, "red", [x, y]);
+        redChecker.addChecker(tiles[y], "red");
         redTeam.push(redChecker);
         redCounter++;
       }
@@ -67,6 +74,7 @@ document.addEventListener("dragover", function( event ) {
 }, false);
 
 
+//Checker movement
 //If tile is playable highlight color to green
 document.addEventListener("dragenter", function( event ) {
     // highlight potential drop target when the draggable element enters it
@@ -103,16 +111,34 @@ function checkDropLocation (dropLocation) {
 }
 
 function moveDiagonal (dropLocation, checker) {
-  if (checker.classList[1] == 'checker--red') {
-    if ( ( Number(checker.parentNode.attributes.y.value) + 1 == Number(dropLocation.target.attributes.y.value) ) && ( Number(checker.parentNode.attributes.x.value) - 1 == Number(dropLocation.target.attributes.x.value) || (Number(checker.parentNode.attributes.x.value) + 1 == Number(dropLocation.target.attributes.x.value)) ) ) {
+  var checkerCurrentYLocation = Number(checker.parentNode.attributes.y.value);
+  var checkerCurrentXLocation = Number(checker.parentNode.attributes.x.value);
+
+  var targetXLocation = Number(dropLocation.target.attributes.x.value);
+  var targetYLocation = Number(dropLocation.target.attributes.y.value);
+
+  var checkerTeam = (checker.classList[1] == 'checker--red' ? 'red' : 'blue');
+  if (checkerTeam == 'red') {
+    //check if movement is up one, over one
+    if ( ( checkerCurrentYLocation + 1 == targetYLocation ) &&
+        ( checkerCurrentXLocation - 1 == targetXLocation || (checkerCurrentXLocation + 1 == targetXLocation) ) ) {
       return true;
     }
+
+    // else if ( ( checkerCurrentYLocation + 2 == targetYLocation ) &&
+    //     ( checkerCurrentXLocation - 2 == targetXLocation || (checkerCurrentXLocation + 2 == targetXLocation) ) &&
+    //     ( targetXLocation - 1 )) {
+    //       if (  )
+    //     }
   } else {
-    if ( ( Number(checker.parentNode.attributes.y.value) - 1 == Number(dropLocation.target.attributes.y.value) ) && ( Number(checker.parentNode.attributes.x.value) - 1 == Number(dropLocation.target.attributes.x.value) || (Number(checker.parentNode.attributes.x.value) + 1 == Number(dropLocation.target.attributes.x.value) ) ) ) {
+    if ( ( checkerCurrentYLocation - 1 == targetYLocation ) &&
+      ( checkerCurrentXLocation - 1 == targetXLocation || (checkerXLocation + 1 == targetXLocation ) ) ) {
       return true;
     }
   }
 }
+
+
 //Logic:
 //-team turn
 //-who starts?
