@@ -7,18 +7,27 @@ function addChecker(tile, color) {
   checker.className = "checker checker--" + color;
   checker.draggable = "true";
   tile.appendChild(checker);
+
+  return checker;
 }
 
 function CheckerPiece(id, color, location) {
-  this.id = id;
-  this.color = color;
-  this.location = location;
-  this.addChecker = function(tile, color) {
+  var self = this;
+  self.id = id,
+  self.color = color,
+  self.addChecker = function(tile, color) {
     var checker = document.createElement('div');
     checker.className = "checker checker--" + color;
     checker.draggable = "true";
     tile.appendChild(checker);
+
+    self.element = checker;
+    self.location = [Number(checker.parentNode.attributes.x.value), Number(checker.parentNode.attributes.y.value)];
   }
+  // this.element = document.createElement('div');
+  //
+  // .addEventListener("click", this, false);
+
 }
 
 var redTeam = [];
@@ -73,6 +82,17 @@ document.addEventListener("dragover", function( event ) {
     event.preventDefault();
 }, false);
 
+CheckerPiece.prototype.handleEvent = function(e) {
+  switch (e.type) {
+    case "click": this.click(e);
+      console.log('clicked');
+  }
+}
+
+CheckerPiece.prototype.click = function(e) {
+    // do something with this.element...
+    this.element.style.color = "#F00";
+}
 
 //Checker movement
 //If tile is playable highlight color to green
