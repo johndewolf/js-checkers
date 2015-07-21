@@ -152,7 +152,7 @@ function moveDiagonal (dropLocation, checker) {
     //     }
   } else {
     if ( ( checkerCurrentYLocation - 1 == targetYLocation ) &&
-      ( checkerCurrentXLocation - 1 == targetXLocation || (checkerXLocation + 1 == targetXLocation ) ) ) {
+      ( checkerCurrentXLocation - 1 == targetXLocation || (checkerCurrentXLocation + 1 == targetXLocation ) ) ) {
       return true;
     }
   }
