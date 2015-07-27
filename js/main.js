@@ -40,28 +40,28 @@ for (var x = 0; x < rows.length; x++) {
     if (x < 3) {
       if (x % 2 === 0 && y % 2 === 0) {
         // var checker = addChecker(tiles[y], "red");
-        var redChecker = new CheckerPiece(redCounter, "red", [x, y]);
+        var redChecker = new CheckerPiece(redCounter, "red");
         redChecker.addChecker(tiles[y], "red");
         redTeam.push(redChecker);
         redCounter++;
       }
       else if (x % 2 != 0 && y % 2 !== 0) {
-        addChecker(tiles[y], "red");
-        var redChecker = new CheckerPiece(redCounter, "red", [x, y]);
+        var redChecker = new CheckerPiece(redCounter, "red");
+        redChecker.addChecker(tiles[y], "red");
         redTeam.push(redChecker);
         redCounter++;
       }
     }
     else if (x > 4) {
       if (x % 2 != 0 && y % 2 != 0) {
-        addChecker(tiles[y], "blue");
-        var blueChecker = new CheckerPiece(blueCounter, "blue", [x, y]);
+        var blueChecker = new CheckerPiece(blueCounter, "blue");
+        blueChecker.addChecker(tiles[y], "blue");
         blueTeam.push(blueChecker);
         blueCounter++;
       }
       else if (x % 2 == 0 && y % 2 == 0 ) {
-        addChecker(tiles[y], "blue");
-        var blueChecker = new CheckerPiece(blueCounter, "blue", [x, y]);
+        var blueChecker = new CheckerPiece(blueCounter, "blue");
+        blueChecker.addChecker(tiles[y], "blue");
         blueTeam.push(blueChecker);
         blueCounter++;
       }
@@ -70,8 +70,14 @@ for (var x = 0; x < rows.length; x++) {
 }
 
 document.addEventListener("dragstart", function( event ) {
-    // store a ref. on the dragged elem
-    dragged = event.target;
+    // store a ref. on the dragged.element elem
+    for (var x = 0; x < 12; x++) {
+      if (event.target == redTeam[x].element) {
+        dragged = redTeam[x];
+      } else if (event.target == blueTeam[x].element) {
+        dragged = blueTeam[x];
+      }
+    }
 }, false);
 
 
@@ -79,18 +85,6 @@ document.addEventListener("dragover", function( event ) {
     // prevent default to allow drop
     event.preventDefault();
 }, false);
-
-CheckerPiece.prototype.handleEvent = function(e) {
-  switch (e.type) {
-    case "click": this.click(e);
-      console.log('clicked');
-  }
-}
-
-CheckerPiece.prototype.click = function(e) {
-    // do something with this.element...
-    this.element.style.color = "#F00";
-}
 
 //Checker movement
 //If tile is playable highlight color to green
@@ -113,18 +107,24 @@ document.addEventListener("dragleave", function( event ) {
 document.addEventListener("drop", function( event ) {
     // prevent default action (open as link for some elements)
     event.preventDefault();
-    // move dragged elem to the selected drop target
-    if ( checkDropLocation(event) != false && dragged.parentNode != event.target && dragged != event.target && moveDiagonal(event, dragged) == true ) {
+    // move dragged.element elem to the selected drop target
+    if ( checkDropLocation(event) != false && dragged.element.parentNode != event.target && dragged.element != event.target && moveDiagonal(event, dragged.element) == true ) {
         event.target.style.background = "";
-        dragged.parentNode.removeChild( dragged );
-        event.target.appendChild( dragged );
+        dragged.element.parentNode.removeChild(dragged.element);
+        event.target.appendChild( dragged.element );
     }
 
 }, false);
 
 function checkDropLocation (dropLocation) {
-  if ( ( dropLocation.target.classList[0] == "tile" && dropLocation.target.childElementCount > 0 )|| ( dropLocation.target.classList[0] == 'checker' ) || ( dropLocation.target.classList[0] != "tile" ) || moveDiagonal(dropLocation, dragged) != true ) {
+  if ( ( dropLocation.target.classList[0] == "tile" && dropLocation.target.childElementCount > 0 ) || ( dropLocation.target.classList[0] == 'checker' ) || ( dropLocation.target.classList[0] != "tile" ) || moveDiagonal(dropLocation, dragged.element) != true ) {
     return false
+  }
+}
+
+function tileOccuppied(tileLocation) {
+  if (tileLocation.childElementCount > 0) {
+    return true;
   }
 }
 
@@ -142,7 +142,6 @@ function moveDiagonal (dropLocation, checker) {
         ( checkerCurrentXLocation - 1 == targetXLocation || (checkerCurrentXLocation + 1 == targetXLocation) ) ) {
       return true;
     }
-
     // else if ( ( checkerCurrentYLocation + 2 == targetYLocation ) &&
     //     ( checkerCurrentXLocation - 2 == targetXLocation || (checkerCurrentXLocation + 2 == targetXLocation) ) &&
     //     ( targetXLocation - 1 )) {
@@ -155,8 +154,27 @@ function moveDiagonal (dropLocation, checker) {
     }
   }
 }
-
-
+//
+// function jumpDiagonal (dropLocation, checker, adjacentXPlusOne, adjacentXMinusOne) {
+//   var checkerCurrentYLocation = Number(checker.parentNode.attributes.y.value);
+//   var checkerCurrentXLocation = Number(checker.parentNode.attributes.x.value);
+//
+//   var targetXLocation = Number(dropLocation.target.attributes.x.value);
+//   var targetYLocation = Number(dropLocation.target.attributes.y.value);
+//
+//   var checkerTeam = (checker.classList[1] == 'checker--red' ? 'red' : 'blue');
+//
+//
+//   if (checkerTeam == 'red') {
+//     //check if movement is up one, over one
+//     if ( ( checkerCurrentYLocation + 2 == targetYLocation ) &&
+//         ( (checkerCurrentXLocation - 2 == targetXLocation &&
+//         tileOccupied(adjacentXMinusOne) == true || (checkerCurrentXLocation + 2 == targetXLocation && tileOccupied(adjacentXPlusOne)) )
+//       ) {
+//       return true;
+//     }
+//   }
+// }
 //Logic:
 //-team turn
 //-who starts?
