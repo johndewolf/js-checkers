@@ -20,7 +20,6 @@ function CheckerPiece(id, color) {
     checker.className = "checker checker--" + color;
     checker.draggable = "true";
     tile.appendChild(checker);
-
     self.element = checker;
   },
     self.location = function(){
@@ -90,8 +89,16 @@ document.addEventListener("dragover", function( event ) {
 //If tile is playable highlight color to green
 document.addEventListener("dragenter", function( event ) {
     // highlight potential drop target when the draggable element enters it
-    if ( checkDropLocation(event) != false && event.target.classList[0] == 'tile' ) {
-        event.target.style.background = "green";
+    // check drop location for all drags
+    if (checkDropLocation(event) != false && event.target.classList[0] == 'tile') {
+      //logic for diagonal move
+      if ( moveDiagonal(event, dragged.element) == true  ) {
+          event.target.style.background = "green";
+      }
+      // logic for jump will go here
+      else if ( moveDiagonal(event, dragged.element) == false ) {
+        console.log('hi');
+      }
     }
 }, false);
 
@@ -113,11 +120,10 @@ document.addEventListener("drop", function( event ) {
         dragged.element.parentNode.removeChild(dragged.element);
         event.target.appendChild( dragged.element );
     }
-
 }, false);
 
 function checkDropLocation (dropLocation) {
-  if ( ( dropLocation.target.classList[0] == "tile" && dropLocation.target.childElementCount > 0 ) || ( dropLocation.target.classList[0] == 'checker' ) || ( dropLocation.target.classList[0] != "tile" ) || moveDiagonal(dropLocation, dragged.element) != true ) {
+  if ( ( dropLocation.target.classList[0] == "tile" && dropLocation.target.childElementCount > 0 ) || ( dropLocation.target.classList[0] == 'checker' ) || ( dropLocation.target.classList[0] != "tile" )) {
     return false
   }
 }
@@ -142,11 +148,6 @@ function moveDiagonal (dropLocation, checker) {
         ( checkerCurrentXLocation - 1 == targetXLocation || (checkerCurrentXLocation + 1 == targetXLocation) ) ) {
       return true;
     }
-    // else if ( ( checkerCurrentYLocation + 2 == targetYLocation ) &&
-    //     ( checkerCurrentXLocation - 2 == targetXLocation || (checkerCurrentXLocation + 2 == targetXLocation) ) &&
-    //     ( targetXLocation - 1 )) {
-    //       if (  )
-    //     }
   } else {
     if ( ( checkerCurrentYLocation - 1 == targetYLocation ) &&
       ( checkerCurrentXLocation - 1 == targetXLocation || (checkerCurrentXLocation + 1 == targetXLocation ) ) ) {
