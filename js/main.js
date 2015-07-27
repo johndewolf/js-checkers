@@ -11,7 +11,7 @@ function addChecker(tile, color) {
   return checker;
 }
 
-function CheckerPiece(id, color, location) {
+function CheckerPiece(id, color) {
   var self = this;
   self.id = id,
   self.color = color,
@@ -22,12 +22,10 @@ function CheckerPiece(id, color, location) {
     tile.appendChild(checker);
 
     self.element = checker;
-    self.location = [Number(checker.parentNode.attributes.x.value), Number(checker.parentNode.attributes.y.value)];
-  }
-  // this.element = document.createElement('div');
-  //
-  // .addEventListener("click", this, false);
-
+  },
+    self.location = function(){
+      return [Number(self.element.parentNode.attributes.x.value), Number(self.element.parentNode.attributes.y.value)];
+    }
 }
 
 var redTeam = [];
