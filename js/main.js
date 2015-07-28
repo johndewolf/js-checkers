@@ -156,26 +156,49 @@ function moveDiagonal (dropLocation, checker) {
   }
 }
 //
-// function jumpDiagonal (dropLocation, checker, adjacentXPlusOne, adjacentXMinusOne) {
+// function jumpDiagonal (dropLocation, checker) {
 //   var checkerCurrentYLocation = Number(checker.parentNode.attributes.y.value);
 //   var checkerCurrentXLocation = Number(checker.parentNode.attributes.x.value);
-//
+
 //   var targetXLocation = Number(dropLocation.target.attributes.x.value);
 //   var targetYLocation = Number(dropLocation.target.attributes.y.value);
-//
+
 //   var checkerTeam = (checker.classList[1] == 'checker--red' ? 'red' : 'blue');
-//
-//
+
 //   if (checkerTeam == 'red') {
 //     //check if movement is up one, over one
 //     if ( ( checkerCurrentYLocation + 2 == targetYLocation ) &&
 //         ( (checkerCurrentXLocation - 2 == targetXLocation &&
-//         tileOccupied(adjacentXMinusOne) == true || (checkerCurrentXLocation + 2 == targetXLocation && tileOccupied(adjacentXPlusOne)) )
+//         tileOccupied(adjacentXMinusOne) == true || (checkerCurrentXLocation + 2 == targetXLocation &&
+//           tileOccupied(adjacentXPlusOne)) )
 //       ) {
 //       return true;
 //     }
 //   }
 // }
+
+function adjacentChecker(checker) {
+  var matches = {};
+  if (checker.color == "red") {
+    for (var i = 0; i < blueTeam.length; i++) {
+      if (blueTeam[i].location()[0] === checker.location()[0] + 1 && blueTeam[i].location()[1] === checker.location()[1] + 1) {
+        matches.xPlusOne = blueTeam[i];
+      } else if (blueTeam[i].location()[0] === checker.location()[0] - 1 && blueTeam[i].location()[1] === checker.location()[1] + 1) {
+        matches.xMinusOne = blueTeam[i];
+      }
+    }
+  }
+  else {
+    for (var i = 0; i < redTeam.length; i++) {
+      if (redTeam[i].location()[0] === checker.location()[0] + 1 && redTeam[i].location()[1] === checker.location()[1] - 1) {
+        matches.xPlusOne = redTeam[i];
+      } else if ( redTeam[i].location()[0] === checker.location()[0] - 1 && redTeam[i].location()[1] === checker.location()[1] - 1 ) {
+        matches.xMinusOne = redTeam[i];
+      }
+    }
+  }
+  return matches;
+}
 //Logic:
 //-team turn
 //-who starts?
