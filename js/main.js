@@ -96,8 +96,8 @@ document.addEventListener("dragenter", function( event ) {
           event.target.style.background = "green";
       }
       // logic for jump will go here
-      else if ( moveDiagonal(event, dragged.element) == false ) {
-        console.log('hi');
+      else if ( (jumpDiagonal(event, dragged) == true ) ) {
+        event.target.style.background = "green";
       }
     }
 }, false);
@@ -115,10 +115,25 @@ document.addEventListener("drop", function( event ) {
     // prevent default action (open as link for some elements)
     event.preventDefault();
     // move dragged.element elem to the selected drop target
-    if ( checkDropLocation(event) != false && dragged.element.parentNode != event.target && dragged.element != event.target && moveDiagonal(event, dragged.element) == true ) {
+    if ( checkDropLocation(event) != false && dragged.element.parentNode != event.target && dragged.element != event.target ) {
+      if ( moveDiagonal(event, dragged.element) == true ) {
         event.target.style.background = "";
         dragged.element.parentNode.removeChild(dragged.element);
         event.target.appendChild( dragged.element );
+      }
+      else if ( jumpDiagonal(event, dragged) == true ) {
+        if (Number(event.target.attributes.x.value) > dragged.location()[0]) {
+          var jumped = adjacentChecker(dragged).xPlusOne.element;
+          jumped.parentNode.removeChild(jumped);
+        }
+        else if (Number(event.target.attributes.x.value) < dragged.location()[0]) {
+            var jumped = adjacentChecker(dragged).xMinusOne.element;
+            jumped.parentNode.removeChild(jumped);
+        }
+        event.target.style.background = "";
+        dragged.element.parentNode.removeChild(dragged.element);
+        event.target.appendChild( dragged.element );
+      }
     }
 }, false);
 
@@ -155,27 +170,22 @@ function moveDiagonal (dropLocation, checker) {
     }
   }
 }
-//
-// function jumpDiagonal (dropLocation, checker) {
-//   var checkerCurrentYLocation = Number(checker.parentNode.attributes.y.value);
-//   var checkerCurrentXLocation = Number(checker.parentNode.attributes.x.value);
 
-//   var targetXLocation = Number(dropLocation.target.attributes.x.value);
-//   var targetYLocation = Number(dropLocation.target.attributes.y.value);
+function jumpDiagonal (dropLocation, checker) {
+  var targetXLocation = Number(dropLocation.target.attributes.x.value);
+  var targetYLocation = Number(dropLocation.target.attributes.y.value);
 
-//   var checkerTeam = (checker.classList[1] == 'checker--red' ? 'red' : 'blue');
-
-//   if (checkerTeam == 'red') {
-//     //check if movement is up one, over one
-//     if ( ( checkerCurrentYLocation + 2 == targetYLocation ) &&
-//         ( (checkerCurrentXLocation - 2 == targetXLocation &&
-//         tileOccupied(adjacentXMinusOne) == true || (checkerCurrentXLocation + 2 == targetXLocation &&
-//           tileOccupied(adjacentXPlusOne)) )
-//       ) {
-//       return true;
-//     }
-//   }
-// }
+  if (checker.color == 'red') {
+    //check if movement is up two, over two
+    if ( ( checker.location()[1] + 2 == targetYLocation ) &&
+        ( (checker.location()[0] - 2 == targetXLocation &&
+        adjacentChecker(checker).xMinusOne != undefined) || (checker.location()[0] + 2 == targetXLocation &&
+          adjacentChecker(checker).xPlusOne != undefined) )
+      ) {
+      return true;
+    }
+  }
+}
 
 function adjacentChecker(checker) {
   var matches = {};
