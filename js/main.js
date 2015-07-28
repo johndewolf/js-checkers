@@ -70,10 +70,13 @@ for (var x = 0; x < rows.length; x++) {
 
 document.addEventListener("dragstart", function( event ) {
     // store a ref. on the dragged.element elem
-    for (var x = 0; x < 12; x++) {
+    for (var x = 0; x < redTeam.length; x++) {
       if (event.target == redTeam[x].element) {
         dragged = redTeam[x];
-      } else if (event.target == blueTeam[x].element) {
+      }
+    }
+    for (var x = 0; x < blueTeam.length; x++) {
+     if (event.target == blueTeam[x].element) {
         dragged = blueTeam[x];
       }
     }
@@ -123,8 +126,16 @@ document.addEventListener("drop", function( event ) {
       }
       else if ( jumpDiagonal(event, dragged) == true ) {
         if (Number(event.target.attributes.x.value) > dragged.location()[0]) {
-          var jumped = adjacentChecker(dragged).xPlusOne.element;
-          jumped.parentNode.removeChild(jumped);
+          var jumped = adjacentChecker(dragged).xPlusOne
+          jumped.element.parentNode.removeChild(jumped.element);
+          for (var x = 0; x < 12; x++) {
+            if (redTeam[x] == jumped) {
+              redTeam.splice(x, 1);
+            }
+            else if (blueTeam[x] == jumped) {
+              blueTeam.splice(x, 1);
+            }
+          }
         }
         else if (Number(event.target.attributes.x.value) < dragged.location()[0]) {
             var jumped = adjacentChecker(dragged).xMinusOne.element;
@@ -178,6 +189,16 @@ function jumpDiagonal (dropLocation, checker) {
   if (checker.color == 'red') {
     //check if movement is up two, over two
     if ( ( checker.location()[1] + 2 == targetYLocation ) &&
+        ( (checker.location()[0] - 2 == targetXLocation &&
+        adjacentChecker(checker).xMinusOne != undefined) || (checker.location()[0] + 2 == targetXLocation &&
+          adjacentChecker(checker).xPlusOne != undefined) )
+      ) {
+      return true;
+    }
+  }
+  if (checker.color == 'blue') {
+    //check if movement is up two, over two
+    if ( ( checker.location()[1] - 2 == targetYLocation ) &&
         ( (checker.location()[0] - 2 == targetXLocation &&
         adjacentChecker(checker).xMinusOne != undefined) || (checker.location()[0] + 2 == targetXLocation &&
           adjacentChecker(checker).xPlusOne != undefined) )
