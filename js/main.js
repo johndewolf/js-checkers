@@ -29,13 +29,13 @@ function CheckerPiece(id, color) {
 
 var redTeam = [];
 var blueTeam = [];
-
+var redCounter = 0;
+var blueCounter = 0;
 //Ridiculously long board setup
 for (var x = 0; x < rows.length; x++) {
   var tiles = rows[x].getElementsByClassName('tile');
+
   for (var y = 0; y < tiles.length; y++) {
-    var redCounter = 0;
-    var blueCounter = 0;
     if (x < 3) {
       if (x % 2 === 0 && y % 2 === 0) {
         // var checker = addChecker(tiles[y], "red");
@@ -48,6 +48,7 @@ for (var x = 0; x < rows.length; x++) {
         var redChecker = new CheckerPiece(redCounter, "red");
         redChecker.addChecker(tiles[y], "red");
         redTeam.push(redChecker);
+        redChecker.index = redCounter;
         redCounter++;
       }
     }
@@ -127,19 +128,11 @@ document.addEventListener("drop", function( event ) {
       else if ( jumpDiagonal(event, dragged) == true ) {
         if (Number(event.target.attributes.x.value) > dragged.location()[0]) {
           var jumped = adjacentChecker(dragged).xPlusOne
-          jumped.element.parentNode.removeChild(jumped.element);
-          for (var x = 0; x < 12; x++) {
-            if (redTeam[x] == jumped) {
-              redTeam.splice(x, 1);
-            }
-            else if (blueTeam[x] == jumped) {
-              blueTeam.splice(x, 1);
-            }
-          }
+          removeCheckerFromTeam(jumped);
         }
         else if (Number(event.target.attributes.x.value) < dragged.location()[0]) {
-            var jumped = adjacentChecker(dragged).xMinusOne.element;
-            jumped.parentNode.removeChild(jumped);
+          var jumped = adjacentChecker(dragged).xMinusOne;
+          removeCheckerFromTeam(jumped);
         }
         event.target.style.background = "";
         dragged.element.parentNode.removeChild(dragged.element);
@@ -229,6 +222,16 @@ function adjacentChecker(checker) {
     }
   }
   return matches;
+}
+
+function removeCheckerFromTeam(checker) {
+  if (checker.color === 'red') {
+    redTeam.splice(checker.id, 1);
+  } else {
+    blueTeam.splice(checker.id, 1);
+  }
+
+  checker.element.parentNode.removeChild(checker.element);
 }
 //Logic:
 //-team turn
