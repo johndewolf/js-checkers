@@ -1,5 +1,3 @@
-
-
 var rows = document.getElementsByClassName("row");
 
 function addChecker(tile, color) {
@@ -22,9 +20,9 @@ function CheckerPiece(id, color) {
     tile.appendChild(checker);
     self.element = checker;
   },
-    self.location = function(){
-      return [Number(self.element.parentNode.attributes.x.value), Number(self.element.parentNode.attributes.y.value)];
-    }
+  self.location = function(){
+    return [Number(self.element.parentNode.attributes.x.value), Number(self.element.parentNode.attributes.y.value)];
+  }
 }
 
 var redTeam = [];
@@ -38,7 +36,6 @@ for (var x = 0; x < rows.length; x++) {
   for (var y = 0; y < tiles.length; y++) {
     if (x < 3) {
       if (x % 2 === 0 && y % 2 === 0) {
-        // var checker = addChecker(tiles[y], "red");
         var redChecker = new CheckerPiece(redCounter, "red");
         redChecker.addChecker(tiles[y], "red");
         redTeam.push(redChecker);
@@ -48,7 +45,6 @@ for (var x = 0; x < rows.length; x++) {
         var redChecker = new CheckerPiece(redCounter, "red");
         redChecker.addChecker(tiles[y], "red");
         redTeam.push(redChecker);
-        redChecker.index = redCounter;
         redCounter++;
       }
     }
@@ -96,7 +92,7 @@ document.addEventListener("dragenter", function( event ) {
     // check drop location for all drags
     if (checkDropLocation(event) != false && event.target.classList[0] == 'tile') {
       //logic for diagonal move
-      if ( moveDiagonal(event, dragged.element) == true  ) {
+      if ( moveDiagonal(event, dragged) == true  ) {
           event.target.style.background = "green";
       }
       // logic for jump will go here
@@ -120,10 +116,10 @@ document.addEventListener("drop", function( event ) {
     event.preventDefault();
     // move dragged.element elem to the selected drop target
     if ( checkDropLocation(event) != false && dragged.element.parentNode != event.target && dragged.element != event.target ) {
-      if ( moveDiagonal(event, dragged.element) == true ) {
+      if ( moveDiagonal(event, dragged) == true ) {
         event.target.style.background = "";
         dragged.element.parentNode.removeChild(dragged.element);
-        event.target.appendChild( dragged.element );
+        event.target.appendChild(dragged.element);
       }
       else if ( jumpDiagonal(event, dragged) == true ) {
         if (Number(event.target.attributes.x.value) > dragged.location()[0]) {
@@ -136,7 +132,7 @@ document.addEventListener("drop", function( event ) {
         }
         event.target.style.background = "";
         dragged.element.parentNode.removeChild(dragged.element);
-        event.target.appendChild( dragged.element );
+        event.target.appendChild(dragged.element);
       }
     }
 }, false);
@@ -154,14 +150,13 @@ function tileOccuppied(tileLocation) {
 }
 
 function moveDiagonal (dropLocation, checker) {
-  var checkerCurrentYLocation = Number(checker.parentNode.attributes.y.value);
-  var checkerCurrentXLocation = Number(checker.parentNode.attributes.x.value);
+  var checkerCurrentYLocation = checker.location()[0];
+  var checkerCurrentXLocation = checker.location()[1];
 
   var targetXLocation = Number(dropLocation.target.attributes.x.value);
   var targetYLocation = Number(dropLocation.target.attributes.y.value);
 
-  var checkerTeam = (checker.classList[1] == 'checker--red' ? 'red' : 'blue');
-  if (checkerTeam == 'red') {
+  if (checker.color === 'red') {
     //check if movement is up one, over one
     if ( ( checkerCurrentYLocation + 1 == targetYLocation ) &&
         ( checkerCurrentXLocation - 1 == targetXLocation || (checkerCurrentXLocation + 1 == targetXLocation) ) ) {
