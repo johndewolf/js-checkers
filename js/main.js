@@ -13,12 +13,13 @@ function CheckerPiece(id, color) {
   var self = this;
   self.id = id,
   self.color = color,
-  self.addChecker = function(tile, color) {
+  self.addChecker = function(tile) {
     var checker = document.createElement('div');
-    checker.className = "checker checker--" + color;
+    checker.className = "checker checker--" + this.color;
     checker.draggable = "true";
     tile.appendChild(checker);
     self.element = checker;
+
   },
   self.location = function(){
     return [Number(self.element.parentNode.attributes.x.value), Number(self.element.parentNode.attributes.y.value)];
@@ -37,13 +38,13 @@ for (var x = 0; x < rows.length; x++) {
     if (x < 3) {
       if (x % 2 === 0 && y % 2 === 0) {
         var redChecker = new CheckerPiece(redCounter, "red");
-        redChecker.addChecker(tiles[y], "red");
+        redChecker.addChecker(tiles[y]);
         redTeam.push(redChecker);
         redCounter++;
       }
       else if (x % 2 != 0 && y % 2 !== 0) {
         var redChecker = new CheckerPiece(redCounter, "red");
-        redChecker.addChecker(tiles[y], "red");
+        redChecker.addChecker(tiles[y]);
         redTeam.push(redChecker);
         redCounter++;
       }
@@ -51,13 +52,13 @@ for (var x = 0; x < rows.length; x++) {
     else if (x > 4) {
       if (x % 2 != 0 && y % 2 != 0) {
         var blueChecker = new CheckerPiece(blueCounter, "blue");
-        blueChecker.addChecker(tiles[y], "blue");
+        blueChecker.addChecker(tiles[y]);
         blueTeam.push(blueChecker);
         blueCounter++;
       }
       else if (x % 2 == 0 && y % 2 == 0 ) {
         var blueChecker = new CheckerPiece(blueCounter, "blue");
-        blueChecker.addChecker(tiles[y], "blue");
+        blueChecker.addChecker(tiles[y]);
         blueTeam.push(blueChecker);
         blueCounter++;
       }
