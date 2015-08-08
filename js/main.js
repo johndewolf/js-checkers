@@ -19,7 +19,6 @@ function CheckerPiece(id, color) {
     checker.draggable = "true";
     tile.appendChild(checker);
     self.element = checker;
-
   },
   self.location = function(){
     return [Number(self.element.parentNode.attributes.x.value), Number(self.element.parentNode.attributes.y.value)];
@@ -96,7 +95,6 @@ document.addEventListener("dragenter", function( event ) {
       if ( moveDiagonal(event, dragged) == true  ) {
           event.target.style.background = "green";
       }
-      // logic for jump will go here
       else if ( (jumpDiagonal(event, dragged) == true ) ) {
         event.target.style.background = "green";
       }
@@ -134,6 +132,10 @@ document.addEventListener("drop", function( event ) {
         event.target.style.background = "";
         dragged.element.parentNode.removeChild(dragged.element);
         event.target.appendChild(dragged.element);
+
+        // if ( (dragged.color == 'red' && dragged.location()[1] === 7) || (dragged.color == 'blue' && dragged.location()[1] === 0) ) {
+        //   dragged.king = true;
+        // }
       }
     }
 }, false);
@@ -151,12 +153,10 @@ function tileOccuppied(tileLocation) {
 }
 
 function moveDiagonal (dropLocation, checker) {
-  var checkerCurrentYLocation = checker.location()[0];
-  var checkerCurrentXLocation = checker.location()[1];
-
+  var checkerCurrentYLocation = checker.location()[1];
+  var checkerCurrentXLocation = checker.location()[0];
   var targetXLocation = Number(dropLocation.target.attributes.x.value);
   var targetYLocation = Number(dropLocation.target.attributes.y.value);
-
   if (checker.color === 'red') {
     //check if movement is up one, over one
     if ( ( checkerCurrentYLocation + 1 == targetYLocation ) &&
