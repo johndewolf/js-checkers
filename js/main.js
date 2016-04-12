@@ -94,7 +94,7 @@ document.addEventListener("dragenter", function( event ) {
     if (checkDropLocation(event) != false && event.target.classList[0] == 'tile') {
       //logic for diagonal move
       if ( moveDiagonal(event, dragged) == true  ) {
-          event.target.style.background = "green";
+        event.target.style.background = "green";
       }
       // logic for jump will go here
       else if ( (jumpDiagonal(event, dragged) == true ) ) {
@@ -151,11 +151,13 @@ function tileOccuppied(tileLocation) {
 }
 
 function moveDiagonal (dropLocation, checker) {
-  var checkerCurrentYLocation = checker.location()[0];
-  var checkerCurrentXLocation = checker.location()[1];
+  var checkerCurrentYLocation = checker.location()[1];
+  var checkerCurrentXLocation = checker.location()[0];
 
   var targetXLocation = Number(dropLocation.target.attributes.x.value);
   var targetYLocation = Number(dropLocation.target.attributes.y.value);
+  console.log('x location: '+checkerCurrentXLocation);
+  console.log('y location: '+checkerCurrentYLocation);
 
   if (checker.color === 'red') {
     //check if movement is up one, over one
