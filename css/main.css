@@ -313,10 +313,24 @@ textarea {
   margin: 12.5% auto;
 }
 
+.checker--king:after {
+  content: 'K';
+  color: white;
+  font-size: 24px;
+  position: relative;
+  top: 31%;
+  right: -28px;
+  z-index: 1;
+}
+
 .checker--red {
   background-color: red;
 }
 
 .checker--blue {
   background-color: blue;
+}
+
+.tile--green {
+  background-color: green;
 }

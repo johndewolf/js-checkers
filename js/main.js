@@ -16,6 +16,7 @@ function CheckerPiece(id, color) {
   self.addChecker = function(tile) {
     var checker = document.createElement('div');
     checker.className = "checker checker--" + this.color;
+    checker.id = this.color + this.id;
     checker.draggable = "true";
     tile.appendChild(checker);
     self.element = checker;
@@ -23,13 +24,18 @@ function CheckerPiece(id, color) {
   },
   self.location = function(){
     return [Number(self.element.parentNode.attributes.x.value), Number(self.element.parentNode.attributes.y.value)];
-  }
+  },
+  self.isKing = false,
+  self.tempLocation = []
 }
 
 var redTeam = [];
 var blueTeam = [];
 var redCounter = 0;
 var blueCounter = 0;
+var turnData = {
+  teamTurn: 'red'
+};
 //Ridiculously long board setup
 for (var x = 0; x < rows.length; x++) {
   var tiles = rows[x].getElementsByClassName('tile');
@@ -68,16 +74,18 @@ for (var x = 0; x < rows.length; x++) {
 
 document.addEventListener("dragstart", function( event ) {
     // store a ref. on the dragged.element elem
-    for (var x = 0; x < redTeam.length; x++) {
-      if (event.target == redTeam[x].element) {
-        dragged = redTeam[x];
-      }
-    }
-    for (var x = 0; x < blueTeam.length; x++) {
-     if (event.target == blueTeam[x].element) {
-        dragged = blueTeam[x];
-      }
-    }
+    redTeam.forEach(function(checker) {
+      if (event.target == checker.element) {
+        dragged = checker;
+      }      
+    })
+
+    blueTeam.forEach(function(checker) {
+      if (event.target == checker.element) {
+        dragged = checker;
+        console.log(dragged);
+      }      
+    })
 }, false);
 
 
@@ -91,15 +99,31 @@ document.addEventListener("dragover", function( event ) {
 document.addEventListener("dragenter", function( event ) {
     // highlight potential drop target when the draggable element enters it
     // check drop location for all drags
-    if (checkDropLocation(event) != false && event.target.classList[0] == 'tile') {
+
+    if (checkDropLocation(event) == true && event.target.classList[0] == 'tile') {
       //logic for diagonal move
-      if ( moveDiagonal(event, dragged) == true  ) {
-        event.target.style.background = "green";
+
+      if ( dragged.tempLocation.length > 0 ) {
+        if ( jumpDiagonal (event, dragged.color, dragged.tempLocation))  {
+        event.target.className += " tile--green";
+        }
+      }
+
+      else if ( moveDiagonal(event, dragged) == true  ) {
+        event.target.className += " tile--green";
       }
       // logic for jump will go here
-      else if ( (jumpDiagonal(event, dragged) == true ) ) {
-        event.target.style.background = "green";
+
+      else if ( (jumpDiagonal(event, dragged.color, dragged.location()) == true ) ) {
+        event.target.className += " tile--green";
+        dragged.tempLocation[0] = Number(event.target.attributes.x.value);
+        dragged.tempLocation[1] = Number(event.target.attributes.y.value);
       }
+      
+      else {
+        jumpDiagonal(event, dragged.color, dragged.tempLocation);
+      }
+
     }
 }, false);
 
@@ -107,40 +131,60 @@ document.addEventListener("dragenter", function( event ) {
 //reset after hightlight
 document.addEventListener("dragleave", function( event ) {
     // reset background of potential drop target when the draggable element leaves it
-    if ( event.target.classList[0] == "tile" ) {
-        event.target.style.background = "";
+
+    if ( event.target.classList[0] == "tile" && jumpDiagonal(event, dragged.color, dragged.location()) != true) {
+      event.target.classList.remove("tile--green");
     }
 }, false);
 
 document.addEventListener("drop", function( event ) {
+    var greenTiles = document.getElementsByClassName('tile--green');
     // prevent default action (open as link for some elements)
+
     event.preventDefault();
     // move dragged.element elem to the selected drop target
     if ( checkDropLocation(event) != false && dragged.element.parentNode != event.target && dragged.element != event.target ) {
       if ( moveDiagonal(event, dragged) == true ) {
-        event.target.style.background = "";
         dragged.element.parentNode.removeChild(dragged.element);
         event.target.appendChild(dragged.element);
       }
-      else if ( jumpDiagonal(event, dragged) == true ) {
-        if (Number(event.target.attributes.x.value) > dragged.location()[0]) {
-          var jumped = adjacentChecker(dragged).xPlusOne
-          removeCheckerFromTeam(jumped);
-        }
-        else if (Number(event.target.attributes.x.value) < dragged.location()[0]) {
-          var jumped = adjacentChecker(dragged).xMinusOne;
-          removeCheckerFromTeam(jumped);
-        }
-        event.target.style.background = "";
+      else if ( jumpDiagonal(event, dragged.color, dragged.location()) == true ) {
+
+        var jumped = jumpCheck([event.target.attributes.x.value, event.target.attributes.y.value], dragged.color, dragged.location());
         dragged.element.parentNode.removeChild(dragged.element);
+        removeCheckerFromTeam(jumped);
         event.target.appendChild(dragged.element);
+      }
+      else if (greenTiles.length > 1) {
+        var jumped = jumpCheck(dragged.tempLocation, dragged.color, dragged.location());
+        removeCheckerFromTeam(jumped);
+        var jumped = jumpCheck([event.target.attributes.x.value, event.target.attributes.y.value], dragged.color, dragged.tempLocation);
+          removeCheckerFromTeam(jumped);
+          event.target.appendChild(dragged.element);
       }
     }
+    
+    if ( greenTiles.length > 0 ) {
+      for (var i = 0; i <= greenTiles.length; i++) {
+        greenTiles[0].classList.remove('tile--green');
+      }
+    }
+    if ( dragged.color === 'red' && dragged.location()[1] === 7 ) {
+      dragged.isKing = true;
+      dragged.element.className += ' checker--king';
+    }
+    else if ( dragged.color === 'blue' && dragged.location()[1] === 0 ) {
+      dragged.isKing = true;
+      dragged.element.className += ' checker--king';
+    }
+    dragged.tempLocation.length = 0;
 }, false);
 
 function checkDropLocation (dropLocation) {
   if ( ( dropLocation.target.classList[0] == "tile" && dropLocation.target.childElementCount > 0 ) || ( dropLocation.target.classList[0] == 'checker' ) || ( dropLocation.target.classList[0] != "tile" )) {
-    return false
+    return false;
+  } else {
+    return true;
   }
 }
 
@@ -156,16 +200,20 @@ function moveDiagonal (dropLocation, checker) {
 
   var targetXLocation = Number(dropLocation.target.attributes.x.value);
   var targetYLocation = Number(dropLocation.target.attributes.y.value);
-  console.log('x location: '+checkerCurrentXLocation);
-  console.log('y location: '+checkerCurrentYLocation);
-
-  if (checker.color === 'red') {
+  if ( checker.isKing === true ) {
+    if ( ((checkerCurrentYLocation + 1 === targetYLocation) || (checkerCurrentYLocation - 1 === targetYLocation)) &&
+          ((checkerCurrentXLocation + 1 === targetXLocation) || (checkerCurrentXLocation - 1) === targetXLocation)) {
+      return true;
+    }
+  }
+  else if ( checker.color === 'red') {
     //check if movement is up one, over one
     if ( ( checkerCurrentYLocation + 1 == targetYLocation ) &&
         ( checkerCurrentXLocation - 1 == targetXLocation || (checkerCurrentXLocation + 1 == targetXLocation) ) ) {
       return true;
     }
-  } else {
+  }
+  else if ( checker.color === 'blue' ){
     if ( ( checkerCurrentYLocation - 1 == targetYLocation ) &&
       ( checkerCurrentXLocation - 1 == targetXLocation || (checkerCurrentXLocation + 1 == targetXLocation ) ) ) {
       return true;
@@ -173,48 +221,55 @@ function moveDiagonal (dropLocation, checker) {
   }
 }
 
-function jumpDiagonal (dropLocation, checker) {
+function jumpDiagonal (dropLocation, color, currentLocation) {
   var targetXLocation = Number(dropLocation.target.attributes.x.value);
   var targetYLocation = Number(dropLocation.target.attributes.y.value);
-
-  if (checker.color == 'red') {
+  if (color == 'red') {
     //check if movement is up two, over two
-    if ( ( checker.location()[1] + 2 == targetYLocation ) &&
-        ( (checker.location()[0] - 2 == targetXLocation &&
-        adjacentChecker(checker).xMinusOne != undefined) || (checker.location()[0] + 2 == targetXLocation &&
-          adjacentChecker(checker).xPlusOne != undefined) )
+    //Nearly impossible to read due to all the ors and ands
+    if ( ( currentLocation[1] + 2 == targetYLocation ) &&
+        ( (currentLocation[0] - 2 == targetXLocation &&
+        adjacentChecker(color, currentLocation).xMinusOne != undefined) || (currentLocation[0] + 2 == targetXLocation &&
+          adjacentChecker(color, currentLocation).xPlusOne != undefined) )
       ) {
       return true;
     }
   }
-  if (checker.color == 'blue') {
+  if (color == 'blue') {
     //check if movement is up two, over two
-    if ( ( checker.location()[1] - 2 == targetYLocation ) &&
-        ( (checker.location()[0] - 2 == targetXLocation &&
-        adjacentChecker(checker).xMinusOne != undefined) || (checker.location()[0] + 2 == targetXLocation &&
-          adjacentChecker(checker).xPlusOne != undefined) )
+    if ( ( currentLocation[1] - 2 == targetYLocation ) &&
+        ( (currentLocation[0] - 2 == targetXLocation &&
+        adjacentChecker(color, currentLocation).xMinusOne != undefined) || (currentLocation[0] + 2 == targetXLocation &&
+          adjacentChecker(color, currentLocation).xPlusOne != undefined) )
       ) {
       return true;
     }
   }
 }
 
-function adjacentChecker(checker) {
+function doubleJump (dropLocation, hoverLocation, checker) {
+  if ( jumpDiagonal(dropLocation, checker) ) {
+
+  }
+}
+
+
+function adjacentChecker(color, location) {
   var matches = {};
-  if (checker.color == "red") {
+  if (color == "red") {
     for (var i = 0; i < blueTeam.length; i++) {
-      if (blueTeam[i].location()[0] === checker.location()[0] + 1 && blueTeam[i].location()[1] === checker.location()[1] + 1) {
+      if (blueTeam[i].location()[0] === location[0] + 1 && blueTeam[i].location()[1] === location[1] + 1) {
         matches.xPlusOne = blueTeam[i];
-      } else if (blueTeam[i].location()[0] === checker.location()[0] - 1 && blueTeam[i].location()[1] === checker.location()[1] + 1) {
+      } else if (blueTeam[i].location()[0] === location[0] - 1 && blueTeam[i].location()[1] === location[1] + 1) {
         matches.xMinusOne = blueTeam[i];
       }
     }
   }
   else {
     for (var i = 0; i < redTeam.length; i++) {
-      if (redTeam[i].location()[0] === checker.location()[0] + 1 && redTeam[i].location()[1] === checker.location()[1] - 1) {
+      if (redTeam[i].location()[0] === location[0] + 1 && redTeam[i].location()[1] === location[1] - 1) {
         matches.xPlusOne = redTeam[i];
-      } else if ( redTeam[i].location()[0] === checker.location()[0] - 1 && redTeam[i].location()[1] === checker.location()[1] - 1 ) {
+      } else if ( redTeam[i].location()[0] === location[0] - 1 && redTeam[i].location()[1] === location[1] - 1 ) {
         matches.xMinusOne = redTeam[i];
       }
     }
@@ -222,17 +277,62 @@ function adjacentChecker(checker) {
   return matches;
 }
 
+function jumpCheck (dropLocation, color, currentLocation) {
+  var targetXLocation = dropLocation[0];
+  var targetYLocation = dropLocation[1];
+
+  if (color == 'red') {
+    //check if movement is up two, over two
+    if ( ( currentLocation[1] + 2 == targetYLocation ) &&
+         ( currentLocation[0] - 2 == targetXLocation ) ) {
+      if ( adjacentChecker(color, currentLocation).xMinusOne != undefined ) {
+        return adjacentChecker(color, currentLocation).xMinusOne;
+      }
+    }
+    else if ( ( currentLocation[1] + 2 == targetYLocation ) &&
+              ( currentLocation[0] + 2 == targetXLocation ) ) {
+      if (adjacentChecker(color, currentLocation).xPlusOne != undefined) {
+        return adjacentChecker(color, currentLocation).xPlusOne;
+      }
+    }
+  } 
+  else if (color == 'blue') {
+    if ( ( currentLocation[1] - 2 == targetYLocation ) &&
+         ( currentLocation[0] - 2 == targetXLocation ) ) {
+      if ( adjacentChecker(color, currentLocation).xMinusOne != undefined ) {
+        return adjacentChecker(color, currentLocation).xMinusOne;
+      }
+    }
+    else if ( ( currentLocation[1] - 2 == targetYLocation ) &&
+              ( currentLocation[0] + 2 == targetXLocation ) ) {
+      if (adjacentChecker(color, currentLocation).xPlusOne != undefined) {
+        return adjacentChecker(color, currentLocation).xPlusOne;
+      }
+    }
+  }
+  else {
+    return false;
+  }
+}
+
 function removeCheckerFromTeam(checker) {
   if (checker.color === 'red') {
-    redTeam.splice(checker.id, 1);
+    redTeam.forEach(function(redChecker, index) {
+      if (checker.id === redChecker.id) {
+        redTeam.splice(index, 1);
+      }
+    })
   } else {
-    blueTeam.splice(checker.id, 1);
+    blueTeam.forEach(function(blueChecker, index) {
+      if (checker.id === blueChecker.id) {
+        blueTeam.splice(index, 1);
+      }
+    })
   }
-
-  checker.element.parentNode.removeChild(checker.element);
+  return checker.element.parentNode.removeChild(checker.element);
 }
 //Logic:
+//-king jump
+//-game over / winner
 //-team turn
 //-who starts?
-//-where can you drop a checker?
-//if you drop piece where you picked it up it disappears --done
