@@ -83,7 +83,6 @@ document.addEventListener("dragstart", function( event ) {
     blueTeam.forEach(function(checker) {
       if (event.target == checker.element) {
         dragged = checker;
-        console.log(dragged);
       }      
     })
 }, false);
@@ -99,31 +98,27 @@ document.addEventListener("dragover", function( event ) {
 document.addEventListener("dragenter", function( event ) {
     // highlight potential drop target when the draggable element enters it
     // check drop location for all drags
-
+    
     if (checkDropLocation(event) == true && event.target.classList[0] == 'tile') {
       //logic for diagonal move
-
+      var dropLoc = [event.target.attributes.x.value, event.target.attributes.y.value];
+      //if there is a temp location, check if you can jump from that location
       if ( dragged.tempLocation.length > 0 ) {
-        if ( jumpDiagonal (event, dragged.color, dragged.tempLocation))  {
+        if ((jumpCheck(dropLoc, dragged.color, dragged.tempLocation, dragged.isKing) !== undefined ) )  {
         event.target.className += " tile--green";
         }
       }
-
+      //check if it just a move, not a jump
       else if ( moveDiagonal(event, dragged) == true  ) {
         event.target.className += " tile--green";
       }
-      // logic for jump will go here
-
-      else if ( (jumpDiagonal(event, dragged.color, dragged.location()) == true ) ) {
+      
+      //check if it is a jump
+      else if ( (jumpCheck(dropLoc, dragged.color, dragged.location(), dragged.isKing) !== undefined ) ) {
         event.target.className += " tile--green";
         dragged.tempLocation[0] = Number(event.target.attributes.x.value);
         dragged.tempLocation[1] = Number(event.target.attributes.y.value);
       }
-      
-      else {
-        jumpDiagonal(event, dragged.color, dragged.tempLocation);
-      }
-
     }
 }, false);
 
@@ -132,7 +127,7 @@ document.addEventListener("dragenter", function( event ) {
 document.addEventListener("dragleave", function( event ) {
     // reset background of potential drop target when the draggable element leaves it
 
-    if ( event.target.classList[0] == "tile" && jumpDiagonal(event, dragged.color, dragged.location()) != true) {
+    if ( event.target.classList[0] == "tile" && (jumpCheck([event.target.attributes.x.value, event.target.attributes.y.value], dragged.color, dragged.location(), dragged.isKing) === undefined )) {
       event.target.classList.remove("tile--green");
     }
 }, false);
@@ -144,21 +139,21 @@ document.addEventListener("drop", function( event ) {
     event.preventDefault();
     // move dragged.element elem to the selected drop target
     if ( checkDropLocation(event) != false && dragged.element.parentNode != event.target && dragged.element != event.target ) {
+      var dropLoc = [event.target.attributes.x.value, event.target.attributes.y.value];
       if ( moveDiagonal(event, dragged) == true ) {
         dragged.element.parentNode.removeChild(dragged.element);
         event.target.appendChild(dragged.element);
       }
-      else if ( jumpDiagonal(event, dragged.color, dragged.location()) == true ) {
-
-        var jumped = jumpCheck([event.target.attributes.x.value, event.target.attributes.y.value], dragged.color, dragged.location());
+      else if ( (jumpCheck(dropLoc, dragged.color, dragged.location(), dragged.isKing) !== undefined ) ) {
+        var jumped = jumpCheck(dropLoc, dragged.color, dragged.location(), dragged.isKing);
         dragged.element.parentNode.removeChild(dragged.element);
         removeCheckerFromTeam(jumped);
         event.target.appendChild(dragged.element);
       }
       else if (greenTiles.length > 1) {
-        var jumped = jumpCheck(dragged.tempLocation, dragged.color, dragged.location());
+        var jumped = jumpCheck(dragged.tempLocation, dragged.color, dragged.location(), dragged.isKing);
         removeCheckerFromTeam(jumped);
-        var jumped = jumpCheck([event.target.attributes.x.value, event.target.attributes.y.value], dragged.color, dragged.tempLocation);
+        var jumped = jumpCheck(dropLoc, dragged.color, dragged.tempLocation, dragged.isKing);
           removeCheckerFromTeam(jumped);
           event.target.appendChild(dragged.element);
       }
@@ -221,38 +216,56 @@ function moveDiagonal (dropLocation, checker) {
   }
 }
 
-function jumpDiagonal (dropLocation, color, currentLocation) {
-  var targetXLocation = Number(dropLocation.target.attributes.x.value);
-  var targetYLocation = Number(dropLocation.target.attributes.y.value);
-  if (color == 'red') {
-    //check if movement is up two, over two
-    //Nearly impossible to read due to all the ors and ands
-    if ( ( currentLocation[1] + 2 == targetYLocation ) &&
-        ( (currentLocation[0] - 2 == targetXLocation &&
-        adjacentChecker(color, currentLocation).xMinusOne != undefined) || (currentLocation[0] + 2 == targetXLocation &&
-          adjacentChecker(color, currentLocation).xPlusOne != undefined) )
-      ) {
-      return true;
-    }
+function getJumpedTile(dropLocation, currentLocation) {
+  var jumpedTile = [];
+  var targetXLocation = Number(dropLocation[0]);
+  var targetYLocation = Number(dropLocation[1]);
+
+  if ( currentLocation[0] + 2 === targetXLocation ) {
+    jumpedTile[0] = currentLocation[0] + 1;
   }
-  if (color == 'blue') {
-    //check if movement is up two, over two
-    if ( ( currentLocation[1] - 2 == targetYLocation ) &&
-        ( (currentLocation[0] - 2 == targetXLocation &&
-        adjacentChecker(color, currentLocation).xMinusOne != undefined) || (currentLocation[0] + 2 == targetXLocation &&
-          adjacentChecker(color, currentLocation).xPlusOne != undefined) )
-      ) {
-      return true;
-    }
+  else if ( currentLocation[0] - 2 === targetXLocation ) {
+    jumpedTile[0] = currentLocation[0] - 1;
   }
+  else {
+    return false;
+  }
+
+  if ( currentLocation[1] + 2 === targetYLocation ) {
+    jumpedTile[1] = currentLocation[1] + 1;
+
+  }
+  else if ( currentLocation[1] - 2 === targetYLocation ) {
+    jumpedTile[1] = currentLocation[1] - 1;
+  }
+  else {
+    return false;
+  }
+  
+  return jumpedTile;
+
 }
 
-function doubleJump (dropLocation, hoverLocation, checker) {
-  if ( jumpDiagonal(dropLocation, checker) ) {
-
+function enemyCheckerOnTile(teamColor, tileLocation) {
+  var match;
+  if (teamColor == "red") {
+    for (var i = 0; i < blueTeam.length; i++) {
+      if ( blueTeam[i].location()[0] === tileLocation[0] && blueTeam[i].location()[1] === tileLocation[1]) {
+        match = blueTeam[i]
+      }
+    }
   }
-}
+  else if (teamColor == "blue") {
+    for (var i = 0; i < redTeam.length; i++) {
+      if ( redTeam[i].location()[0] === tileLocation[0] && redTeam[i].location()[1] === tileLocation[1]) {
+        match = redTeam[i];
+      }
+    }
+  }
 
+  return match;
+
+}
 
 function adjacentChecker(color, location) {
   var matches = {};
@@ -277,11 +290,18 @@ function adjacentChecker(color, location) {
   return matches;
 }
 
-function jumpCheck (dropLocation, color, currentLocation) {
+function jumpCheck (dropLocation, color, currentLocation, isKing) {
   var targetXLocation = dropLocation[0];
   var targetYLocation = dropLocation[1];
-
-  if (color == 'red') {
+  if (isKing === true) {
+    var jumpedTile = getJumpedTile([targetXLocation, targetYLocation], currentLocation)
+    if (jumpedTile !== false) {
+      if (enemyCheckerOnTile(color, jumpedTile) !== undefined) {
+        return enemyCheckerOnTile(color, jumpedTile);
+      }
+    }
+  }
+  else if (color == 'red') {
     //check if movement is up two, over two
     if ( ( currentLocation[1] + 2 == targetYLocation ) &&
          ( currentLocation[0] - 2 == targetXLocation ) ) {
@@ -310,9 +330,6 @@ function jumpCheck (dropLocation, color, currentLocation) {
       }
     }
   }
-  else {
-    return false;
-  }
 }
 
 function removeCheckerFromTeam(checker) {
@@ -332,7 +349,6 @@ function removeCheckerFromTeam(checker) {
   return checker.element.parentNode.removeChild(checker.element);
 }
 //Logic:
-//-king jump
 //-game over / winner
 //-team turn
 //-who starts?
