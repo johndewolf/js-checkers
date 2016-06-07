@@ -23,7 +23,8 @@ var blueTeam = [];
 var redCounter = 0;
 var blueCounter = 0;
 var turnData = {
-  teamTurn: 'red'
+  teamTurn: 'red',
+  gameOver: false
 };
 
 boardSetup();
@@ -135,8 +136,25 @@ document.addEventListener("drop", function( event ) {
       }
       dragged.tempLocation.length = 0;
       dragged = '';
+      if (checkForWinner() === true) {
+        document.getElementById('game-info').innerHTML = turnData.gameWinner + ' wins!!!';
+      }
     }
 }, false);
+
+function checkForWinner() {
+  if (blueTeam.length === 0) {
+    turnData.gameOver = true;
+    turnData.gameWinner = 'red'
+    return true;
+  } else if (redTeam.length === 0) {
+    turnData.gameOver = true;
+    turnData.gameWinner = 'blue';
+    return true
+  } else {
+    return false;
+  }
+}
 
 function checkDropLocation (dropLocation) {
   if ( ( dropLocation.target.classList[0] == "tile" && dropLocation.target.childElementCount > 0 ) || ( dropLocation.target.classList[0] == 'checker' ) || ( dropLocation.target.classList[0] != "tile" )) {
